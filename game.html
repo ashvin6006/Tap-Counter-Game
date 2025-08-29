@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tap Counter Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .header {
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 30px;
+        }
+
+        .user-info {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px 15px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: background 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .game-container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 40px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .game-title {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .settings {
+            margin-bottom: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .setting-group {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .setting-group label {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .time-input {
+            padding: 10px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            width: 80px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .preset-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .preset-btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9em;
+        }
+
+        .preset-btn:hover, .preset-btn.active {
+            background: rgba(255, 255, 255, 0.4);
+            transform: scale(1.05);
+        }
+
+        .game-stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-label {
+            font-size: 1em;
+            opacity: 0.9;
+        }
+
+        .tap-button {
+            width: 200px;
+            height: 200px;
+            border: none;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #ff6b6b, #ff8e53);
+            color: white;
+            font-size: 2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.1s;
+            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.4);
+            margin: 20px;
+        }
+
+        .tap-button:hover {
+            transform: scale(1.05);
+        }
+
+        .tap-button:active {
+            transform: scale(0.95);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.6);
+        }
+
+        .tap-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .control-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .start-btn {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .start-btn:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+
+        .reset-btn {
+            background: #f44336;
+            color: white;
+        }
+
+        .reset-btn:hover {
+            background: #da190b;
+            transform: translateY(-2px);
+        }
+
+        .results {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .results.show {
+            display: block;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .best-score {
+            background: rgba(255, 215, 0, 0.3);
+            padding: 10px;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+
+        @media (max-width: 600px) {
+            .game-container {
+                padding: 20px;
+            }
+
+            .tap-button {
+                width: 150px;
+                height: 150px;
+                font-size: 1.5em;
+            }
+
+            .game-title {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header with user info and logout -->
+    <div class="header">
+        <div class="user-info">
+            <span id="welcomeUser">Welcome, User!</span>
+        </div>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+
+    <!-- Main Game Container -->
+    <div class="game-container">
+        <h1 class="game-title">🎯 Tap Counter</h1>
+
+        <!-- Game Settings -->
+        <div class="settings">
+            <div class="setting-group">
+                <label>Time:</label>
+                <input type="number" id="timeInput" class="time-input" value="10" min="1" max="300">
+                <span>seconds</span>
+            </div>
+            <div class="preset-buttons">
+                <button class="preset-btn active" onclick="setTime(10)">10s</button>
+                <button class="preset-btn" onclick="setTime(30)">30s</button>
+                <button class="preset-btn" onclick="setTime(60)">1 min</button>
+                <button class="preset-btn" onclick="setTime(120)">2 min</button>
+                <button class="preset-btn" onclick="setTime(300)">5 min</button>
+            </div>
+        </div>
+
+        <!-- Game Stats -->
+        <div class="game-stats">
+            <div class="stat">
+                <div id="tapCount" class="stat-number">0</div>
+                <div class="stat-label">Taps</div>
+            </div>
+            <div class="stat">
+                <div id="timeLeft" class="stat-number">10</div>
+                <div class="stat-label">Time Left</div>
+            </div>
+            <div class="stat">
+                <div id="tapsPerSecond" class="stat-number">0.0</div>
+                <div class="stat-label">Taps/Sec</div>
+            </div>
+        </div>
+
+        <!-- Main Tap Button -->
+        <button id="tapButton" class="tap-button" onclick="tap()" disabled>
+            TAP ME!
+        </button>
+
+        <!-- Control Buttons -->
+        <div class="control-buttons">
+            <button id="startBtn" class="control-btn start-btn" onclick="startGame()">Start Game</button>
+            <button class="control-btn reset-btn" onclick="resetGame()">Reset</button>
+        </div>
+
+        <!-- Results Section -->
+        <div id="results" class="results">
+            <h3>🎉 Game Complete!</h3>
+            <p>Final Score: <span id="finalScore">0</span> taps</p>
+            <p>Average Speed: <span id="avgSpeed">0.0</span> taps/second</p>
+            <div id="bestScore" class="best-score" style="display: none;">
+                <p>🏆 New Best Score!</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game variables
+        let tapCount = 0;
+        let timeLeft = 10;
+        let gameActive = false;
+        let gameTimer = null;
+        let startTime = null;
+
+        // Get user info from login
+        const currentUser = JSON.parse(localStorage.getItem('currentUser')) || { name: 'Guest' };
+        document.getElementById('welcomeUser').textContent = `Welcome, ${currentUser.name}!`;
+
+        // Load best scores for this user
+        let userScores = JSON.parse(localStorage.getItem(`scores_${currentUser.email}`)) || [];
+
+        function setTime(seconds) {
+            if (!gameActive) {
+                timeLeft = seconds;
+                document.getElementById('timeInput').value = seconds;
+                document.getElementById('timeLeft').textContent = seconds;
+
+                // Update active preset button
+                document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
+                event.target.classList.add('active');
+            }
+        }
+
+        function startGame() {
+            // Get custom time from input
+            const customTime = parseInt(document.getElementById('timeInput').value);
+            if (customTime && customTime > 0 && customTime <= 300) {
+                timeLeft = customTime;
+            }
+
+            // Reset game state
+            tapCount = 0;
+            gameActive = true;
+            startTime = Date.now();
+
+            // Update UI
+            document.getElementById('tapCount').textContent = '0';
+            document.getElementById('timeLeft').textContent = timeLeft;
+            document.getElementById('tapsPerSecond').textContent = '0.0';
+            document.getElementById('tapButton').disabled = false;
+            document.getElementById('startBtn').textContent = 'Playing...';
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('results').classList.remove('show');
+
+            // Start countdown timer
+            gameTimer = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timeLeft').textContent = timeLeft;
+
+                if (timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function tap() {
+            if (gameActive) {
+                tapCount++;
+                document.getElementById('tapCount').textContent = tapCount;
+
+                // Calculate taps per second
+                const elapsedTime = (Date.now() - startTime) / 1000;
+                const tapsPerSec = (tapCount / elapsedTime).toFixed(1);
+                document.getElementById('tapsPerSecond').textContent = tapsPerSec;
+
+                // Add visual feedback
+                const button = document.getElementById('tapButton');
+                button.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    button.style.transform = 'scale(1)';
+                }, 100);
+            }
+        }
+
+        function endGame() {
+            gameActive = false;
+            clearInterval(gameTimer);
+
+            // Calculate final stats
+            const totalTime = parseInt(document.getElementById('timeInput').value);
+            const avgSpeed = (tapCount / totalTime).toFixed(1);
+
+            // Update UI
+            document.getElementById('tapButton').disabled = true;
+            document.getElementById('startBtn').textContent = 'Start Game';
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('finalScore').textContent = tapCount;
+            document.getElementById('avgSpeed').textContent = avgSpeed;
+
+            // Check for best score
+            const isNewBest = checkBestScore(tapCount, totalTime);
+            if (isNewBest) {
+                document.getElementById('bestScore').style.display = 'block';
+            } else {
+                document.getElementById('bestScore').style.display = 'none';
+            }
+
+            // Show results
+            document.getElementById('results').classList.add('show');
+        }
+
+        function checkBestScore(score, duration) {
+            const existingScore = userScores.find(s => s.duration === duration);
+
+            if (!existingScore || score > existingScore.score) {
+                // Remove old score for this duration
+                userScores = userScores.filter(s => s.duration !== duration);
+                // Add new best score
+                userScores.push({ score, duration, date: new Date().toISOString() });
+                // Save to localStorage
+                localStorage.setItem(`scores_${currentUser.email}`, JSON.stringify(userScores));
+                return true;
+            }
+            return false;
+        }
+
+        function resetGame() {
+            gameActive = false;
+            clearInterval(gameTimer);
+            tapCount = 0;
+            timeLeft = parseInt(document.getElementById('timeInput').value) || 10;
+
+            // Update UI
+            document.getElementById('tapCount').textContent = '0';
+            document.getElementById('timeLeft').textContent = timeLeft;
+            document.getElementById('tapsPerSecond').textContent = '0.0';
+            document.getElementById('tapButton').disabled = true;
+            document.getElementById('startBtn').textContent = 'Start Game';
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('results').classList.remove('show');
+        }
+
+        function logout() {
+            // Clear current user session
+            localStorage.removeItem('currentUser');
+            // Redirect back to login page
+            window.location.href = 'sign.html';
+        }
+
+        // Update time when input changes
+        document.getElementById('timeInput').addEventListener('input', function() {
+            if (!gameActive) {
+                const newTime = parseInt(this.value) || 10;
+                timeLeft = newTime;
+                document.getElementById('timeLeft').textContent = newTime;
+
+                // Remove active class from preset buttons for custom time
+                document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
+            }
+        });
+
+        // Initialize display
+        document.getElementById('timeLeft').textContent = timeLeft;
+
+        // Check if user is logged in
+// Check if user is logged in
+if (!currentUser || (!currentUser.email && currentUser.name !== "Guest")) {
+    alert('Please login first!');
+    window.location.href = 'sign.html';
+}
+
+    </script>
+</body>
+</html>
